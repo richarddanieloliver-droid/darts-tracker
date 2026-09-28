@@ -25,11 +25,12 @@ Other commands: `npm test` (logic tests), `npm run build` (production build into
 
 ## Using it on a phone
 
-The app is a static site — no server or database. To use it on your phone, publish the `dist/`
-folder to any free static host, for example:
+The app is a static site — no server or database. Every push to `main` is tested, built and
+published to GitHub Pages by `.github/workflows/deploy.yml`:
 
-- **Netlify Drop:** run `npm run build`, then drag the `dist` folder onto https://app.netlify.com/drop.
-- **GitHub Pages:** push the repo and publish `dist/` via a Pages workflow.
+**https://richarddanieloliver-droid.github.io/darts-tracker/**
+
+(One-off setup: repo *Settings → Pages → Source: GitHub Actions*.)
 
 Open the site on your phone and use *Share → Add to Home Screen* (iOS) or *Install app* (Android).
 It then works offline like a normal app.
