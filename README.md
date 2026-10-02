@@ -4,9 +4,9 @@ Tournament tracker for EBDO darts: keep a player list, pick who's playing, auto-
 (singles or pairs), record best-of-N scores, and follow the live table. The top 4 go through to
 the play-offs (1st v 4th, 2nd v 3rd, then the final).
 
-**Player stats** (home → Player stats) total every scored match across all tournaments, including
-play-offs: matches played/won/lost, legs won/lost, and Leg % (legs won ÷ legs played × 100, one
-decimal place). Filter by All / Singles / Pairs; in pairs both partners get the pair's result.
+**Player stats** (home → Player stats) total each player's individual results from every singles
+tournament, including play-offs: matches played/won/lost, legs won/lost, and Leg % (legs won ÷ legs
+played × 100, one decimal place). Pairs events are not counted.
 
 **Table rules:** 2 points per win. Ranked on Points, then Leg Difference (Legs For − Legs Against),
 then Legs For, then name.

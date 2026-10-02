@@ -127,7 +127,7 @@ describe('player stats', () => {
     expect(formatPct(null)).toBe('–');
   });
 
-  it('totals across tournaments, play-offs and pairs, skipping unplayed matches', () => {
+  it('totals singles matches incl. play-offs, ignoring pairs and unplayed matches', () => {
     const singles = tour('s', 'singles', [
       { id: 'a', playerIds: ['p1'] },
       { id: 'b', playerIds: ['p2'] },
@@ -141,14 +141,12 @@ describe('player stats', () => {
       { id: 'y', playerIds: ['p2', 'p4'] },
     ], [m('x', 'y', 2, 1)]);
 
-    const byId = (filter?: 'all' | 'singles' | 'pairs') =>
-      Object.fromEntries(computePlayerStats([singles, pairs], filter).map((s) => [s.playerId, s]));
+    const byId = Object.fromEntries(computePlayerStats([singles, pairs]).map((s) => [s.playerId, s]));
 
-    expect(byId().p1).toMatchObject({ played: 3, won: 2, lost: 1, legsWon: 4, legsLost: 4, legWinPct: 50 });
-    expect(byId().p3).toMatchObject({ played: 1, won: 1, lost: 0, legsWon: 2, legsLost: 1, legWinPct: 66.7 });
-    expect(byId('singles').p1).toMatchObject({ played: 2, legsWon: 2, legsLost: 3, legWinPct: 40 });
-    expect(byId('singles').p3).toBeUndefined();
-    expect(byId('pairs').p2).toMatchObject({ played: 1, won: 0, lost: 1, legsWon: 1, legsLost: 2 });
+    expect(byId.p1).toMatchObject({ played: 2, won: 1, lost: 1, legsWon: 2, legsLost: 3, legWinPct: 40 });
+    expect(byId.p2).toMatchObject({ played: 2, won: 1, lost: 1, legsWon: 3, legsLost: 2, legWinPct: 60 });
+    expect(byId.p3).toBeUndefined(); // only played pairs
+    expect(byId.p4).toBeUndefined();
   });
 
   it('is empty when nothing has been scored', () => {

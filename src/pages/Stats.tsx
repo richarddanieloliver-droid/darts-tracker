@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Layout } from '../components/Layout';
-import { SegmentedTabs } from '../components/SegmentedTabs';
 import { Avatar } from '../components/Avatar';
 import { useStore } from '../store';
-import { computePlayerStats, formatPct, type PlayerStats, type StatsFilter } from '../lib/playerStats';
+import { computePlayerStats, formatPct, type PlayerStats } from '../lib/playerStats';
 
 type SortKey = 'played' | 'won' | 'lost' | 'legsWon' | 'legsLost' | 'legWinPct';
 
@@ -19,14 +18,13 @@ const COLUMNS: { key: SortKey; label: string; title: string }[] = [
 export function Stats() {
   const tournaments = useStore((s) => s.tournaments);
   const players = useStore((s) => s.players);
-  const [filter, setFilter] = useState<StatsFilter>('all');
   const [sort, setSort] = useState<SortKey>('legWinPct');
 
   const nameOf = (id: string) => players.find((p) => p.id === id)?.name ?? '?';
 
   const rows = useMemo(() => {
     const value = (s: PlayerStats) => (sort === 'legWinPct' ? (s.legWinPct ?? -1) : s[sort]);
-    return computePlayerStats(tournaments, filter).sort(
+    return computePlayerStats(tournaments).sort(
       (a, b) =>
         value(b) - value(a) ||
         (b.legWinPct ?? -1) - (a.legWinPct ?? -1) ||
@@ -34,33 +32,17 @@ export function Stats() {
         nameOf(a.playerId).localeCompare(nameOf(b.playerId)),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournaments, players, filter, sort]);
+  }, [tournaments, players, sort]);
 
   const th = 'px-0.5 py-2 text-center font-semibold cursor-pointer select-none';
   const td = 'num px-0.5 py-2.5 text-center text-[17px]';
 
   return (
-    <Layout
-      title="Player stats"
-      back
-      below={
-        <SegmentedTabs<StatsFilter>
-          tabs={[
-            { id: 'all', label: 'All' },
-            { id: 'singles', label: 'Singles' },
-            { id: 'pairs', label: 'Pairs' },
-          ]}
-          value={filter}
-          onChange={setFilter}
-        />
-      }
-    >
+    <Layout title="Player stats" back>
       {rows.length === 0 ? (
         <div className="mt-12 text-center text-muted">
           <div className="text-5xl">📊</div>
-          <p className="mt-3 text-[15px]">
-            No results yet{filter !== 'all' ? ` for ${filter}` : ''}. Stats appear once matches are scored.
-          </p>
+          <p className="mt-3 text-[15px]">No singles results yet. Stats appear once matches are scored.</p>
         </div>
       ) : (
         <>
@@ -127,8 +109,8 @@ export function Stats() {
             </table>
           </div>
           <p className="mt-3 px-1 text-[12px] leading-relaxed text-muted">
-            Totals across every tournament, including play-offs. Leg % = legs won ÷ legs played × 100, to one
-            decimal place. In pairs, both partners are credited with the pair's result. Tap a column to sort.
+            Individual results from every singles tournament, including play-offs. Pairs events aren't counted.
+            Leg % = legs won ÷ legs played × 100, to one decimal place. Tap a column to sort.
           </p>
         </>
       )}

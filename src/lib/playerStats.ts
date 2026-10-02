@@ -1,8 +1,6 @@
 import type { Tournament } from '../types';
 import { isPlayed } from './standings';
 
-export type StatsFilter = 'all' | 'singles' | 'pairs';
-
 export interface PlayerStats {
   playerId: string;
   played: number;
@@ -21,10 +19,10 @@ export function legWinPct(legsWon: number, legsLost: number): number | null {
 }
 
 /**
- * Career stats per player across every scored match (group and play-offs).
- * In pairs events each partner is credited with the pair's result and legs.
+ * Individual career stats per player across every scored singles match
+ * (group and play-offs). Pairs events are ignored.
  */
-export function computePlayerStats(tournaments: Tournament[], filter: StatsFilter = 'all'): PlayerStats[] {
+export function computePlayerStats(tournaments: Tournament[]): PlayerStats[] {
   const stats = new Map<string, PlayerStats>();
   const get = (playerId: string) => {
     let s = stats.get(playerId);
@@ -36,23 +34,22 @@ export function computePlayerStats(tournaments: Tournament[], filter: StatsFilte
   };
 
   for (const t of tournaments) {
-    if (filter !== 'all' && t.type !== filter) continue;
-    const playersOf = (entryId: string) => t.entries.find((e) => e.id === entryId)?.playerIds ?? [];
+    if (t.type !== 'singles') continue;
+    const playerOf = (entryId: string) => t.entries.find((e) => e.id === entryId)?.playerIds[0];
     for (const m of t.matches) {
       if (!isPlayed(m)) continue;
       const sides = [
-        { players: playersOf(m.homeEntryId), legsFor: m.homeLegs!, legsAgainst: m.awayLegs! },
-        { players: playersOf(m.awayEntryId), legsFor: m.awayLegs!, legsAgainst: m.homeLegs! },
+        { playerId: playerOf(m.homeEntryId), legsFor: m.homeLegs!, legsAgainst: m.awayLegs! },
+        { playerId: playerOf(m.awayEntryId), legsFor: m.awayLegs!, legsAgainst: m.homeLegs! },
       ];
-      for (const side of sides) {
-        for (const playerId of side.players) {
-          const s = get(playerId);
-          s.played++;
-          if (side.legsFor > side.legsAgainst) s.won++;
-          else if (side.legsFor < side.legsAgainst) s.lost++;
-          s.legsWon += side.legsFor;
-          s.legsLost += side.legsAgainst;
-        }
+      for (const { playerId, legsFor, legsAgainst } of sides) {
+        if (!playerId) continue;
+        const s = get(playerId);
+        s.played++;
+        if (legsFor > legsAgainst) s.won++;
+        else if (legsFor < legsAgainst) s.lost++;
+        s.legsWon += legsFor;
+        s.legsLost += legsAgainst;
       }
     }
   }
