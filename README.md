@@ -4,6 +4,10 @@ Tournament tracker for EBDO darts: keep a player list, pick who's playing, auto-
 (singles or pairs), record best-of-N scores, and follow the live table. The top 4 go through to
 the play-offs (1st v 4th, 2nd v 3rd, then the final).
 
+**Player stats** (home → Player stats) total every scored match across all tournaments, including
+play-offs: matches played/won/lost, legs won/lost, and Leg % (legs won ÷ legs played × 100, one
+decimal place). Filter by All / Singles / Pairs; in pairs both partners get the pair's result.
+
 **Table rules:** 2 points per win. Ranked on Points, then Leg Difference (Legs For − Legs Against),
 then Legs For, then name.
 
@@ -44,7 +48,7 @@ same or another device.
 ## Code map
 
 - `src/lib/` — pure logic: `roundRobin.ts` (draw), `standings.ts` (table), `playoffs.ts`,
-  `validateScore.ts`; tests in `logic.test.ts`
+  `validateScore.ts`, `playerStats.ts`; tests in `logic.test.ts`
 - `src/store.ts` — Zustand store persisted to localStorage
-- `src/pages/` — Home, Players, New tournament, Tournament (Fixtures / Table / Play-offs), Settings
+- `src/pages/` — Home, Players, Player stats, New tournament, Tournament (Fixtures / Table / Play-offs), Settings
 - `src/components/` — MatchCard, ScoreSheet, StandingsTable, etc.

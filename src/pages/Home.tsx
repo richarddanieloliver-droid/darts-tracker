@@ -82,6 +82,12 @@ export function Home() {
       >
         <span className="text-xl leading-none">+</span> New tournament
       </Link>
+      <Link
+        to="/stats"
+        className="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-card py-3 text-[15px] font-semibold text-white transition hover:bg-card-2 active:scale-[0.99]"
+      >
+        📊 Player stats
+      </Link>
       {playerCount === 0 && (
         <p className="mt-3 px-1 text-center text-[13px] text-muted">
           Tip: add your regulars on the{' '}

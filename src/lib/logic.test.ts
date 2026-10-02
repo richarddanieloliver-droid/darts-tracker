@@ -4,6 +4,8 @@ import { byeForRound, roundRobin } from './roundRobin';
 import { computeStandings } from './standings';
 import { validateScore, quickScores } from './validateScore';
 import { createFinal, createSemis, groupComplete } from './playoffs';
+import { computePlayerStats, formatPct, legWinPct } from './playerStats';
+import type { Tournament } from '../types';
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `e${i + 1}`);
 const entries = (n: number): Entry[] => ids(n).map((id) => ({ id, playerIds: [id] }));
@@ -108,5 +110,49 @@ describe('playoffs', () => {
   it('knows when the group is complete', () => {
     expect(groupComplete([m('e1', 'e2', 2, 0)])).toBe(true);
     expect(groupComplete([{ id: 'x', stage: 'group', round: 1, homeEntryId: 'e1', awayEntryId: 'e2' }])).toBe(false);
+  });
+});
+
+describe('player stats', () => {
+  const tour = (id: string, type: Tournament['type'], entries: Entry[], matches: Match[]): Tournament => ({
+    id, name: id, date: '2026-01-01', type, bestOf: 3, entries, matches, status: 'group', createdAt: 0,
+  });
+
+  it('rounds leg win % to one decimal place', () => {
+    expect(legWinPct(2, 1)).toBe(66.7);
+    expect(legWinPct(1, 2)).toBe(33.3);
+    expect(legWinPct(5, 3)).toBe(62.5);
+    expect(legWinPct(0, 0)).toBeNull();
+    expect(formatPct(50)).toBe('50.0%');
+    expect(formatPct(null)).toBe('–');
+  });
+
+  it('totals across tournaments, play-offs and pairs, skipping unplayed matches', () => {
+    const singles = tour('s', 'singles', [
+      { id: 'a', playerIds: ['p1'] },
+      { id: 'b', playerIds: ['p2'] },
+    ], [
+      m('a', 'b', 2, 1),
+      m('b', 'a', 2, 0, 'final'),
+      { id: 'u', stage: 'group', round: 2, homeEntryId: 'a', awayEntryId: 'b' },
+    ]);
+    const pairs = tour('p', 'pairs', [
+      { id: 'x', playerIds: ['p1', 'p3'] },
+      { id: 'y', playerIds: ['p2', 'p4'] },
+    ], [m('x', 'y', 2, 1)]);
+
+    const byId = (filter?: 'all' | 'singles' | 'pairs') =>
+      Object.fromEntries(computePlayerStats([singles, pairs], filter).map((s) => [s.playerId, s]));
+
+    expect(byId().p1).toMatchObject({ played: 3, won: 2, lost: 1, legsWon: 4, legsLost: 4, legWinPct: 50 });
+    expect(byId().p3).toMatchObject({ played: 1, won: 1, lost: 0, legsWon: 2, legsLost: 1, legWinPct: 66.7 });
+    expect(byId('singles').p1).toMatchObject({ played: 2, legsWon: 2, legsLost: 3, legWinPct: 40 });
+    expect(byId('singles').p3).toBeUndefined();
+    expect(byId('pairs').p2).toMatchObject({ played: 1, won: 0, lost: 1, legsWon: 1, legsLost: 2 });
+  });
+
+  it('is empty when nothing has been scored', () => {
+    const t = tour('t', 'singles', entries(2), [{ id: 'x', stage: 'group', round: 1, homeEntryId: 'e1', awayEntryId: 'e2' }]);
+    expect(computePlayerStats([t])).toEqual([]);
   });
 });
